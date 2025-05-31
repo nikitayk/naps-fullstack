@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -22,6 +22,8 @@ ChartJS.register(
 );
 
 export default function Dashboard() {
+  const chartRef = useRef(null);
+
   const chartData = {
     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
     datasets: [
@@ -33,6 +35,39 @@ export default function Dashboard() {
       }
     ]
   };
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'top',
+      },
+      title: {
+        display: true,
+        text: 'Balance History'
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          callback: (value) => `$${value}`
+        }
+      }
+    }
+  };
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (chartRef.current) {
+        chartRef.current.resize();
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -54,9 +89,8 @@ export default function Dashboard() {
       </div>
 
       <div className="bg-white p-6 rounded-lg shadow">
-        <h2 className="text-xl font-bold mb-4">Balance History</h2>
-        <div className="h-64">
-          <Line data={chartData} options={{ maintainAspectRatio: false }} />
+        <div className="h-[400px]">
+          <Line ref={chartRef} data={chartData} options={chartOptions} />
         </div>
       </div>
     </div>
